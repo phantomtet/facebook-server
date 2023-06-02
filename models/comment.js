@@ -1,9 +1,9 @@
 import mongoose from "mongoose";
 
 const commentSchema = mongoose.Schema({
-    created_at: {
+    createdAt: {
         type: Date,
-        default: Date.now()
+        default: Date.now
     },
     content: {
         type: String,
@@ -11,7 +11,8 @@ const commentSchema = mongoose.Schema({
     },
     ownerId: {
         type: mongoose.Types.ObjectId,
-        required: true
+        required: true,
+        ref: 'user'
     },
     postId: {
         type: mongoose.Types.ObjectId,

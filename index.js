@@ -9,6 +9,8 @@ import FeedRouter from './routes/feed.js'
 import CommentRouter from './routes/comment.js'
 import MeRouter from './routes/@me.js'
 import PostRouter from './routes/post.js'
+import SearchRouter from './routes/search.js'
+
 dotenv.config()
 const app = express()
 app.use(cors())
@@ -28,4 +30,5 @@ app.use('/api/feed', FeedRouter)
 app.use('/api/comment', CommentRouter)
 app.use('/api/@me', MeRouter)
 app.use('/api/post', PostRouter)
+app.use('/api/search', SearchRouter)
 app.listen(process.env.PORT || 3001)

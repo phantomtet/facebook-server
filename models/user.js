@@ -20,5 +20,9 @@ const userSchema = mongoose.Schema({
     }
 })
 
+export const userProjection = {
+    email: 0, password: 0
+}
+
 const UserModel = mongoose.model('user', userSchema)
 export default UserModel
