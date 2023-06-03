@@ -33,19 +33,15 @@ router.post('/:postId/reaction', verifyToken, async (req, res) => {
         let arrayFilters = []
         if (!oldReact) {
             inc['reaction.$[elem].count'] = 1       //postModel.reaction.[elem].count += 1
-            inc.totalReaction = 1
             arrayFilters.push({ 'elem.type': type })             // array[where elem.type = type]
         }
         else if (oldReact.type !== type) {
             inc['reaction.$[elem1].count'] = -1
             inc['reaction.$[elem2].count'] = 1
             arrayFilters = [{ 'elem1.type': oldReact.type }, { 'elem2.type': type }]
-            if (type === 0) inc.totalReaction = -1
-            if (oldReact.type === 0) inc.totalReaction = 1
         }
         else if (type !== 0) {
             inc['reaction.$[elem].count'] = -1
-            inc.totalReaction = -1
             arrayFilters.push({ 'elem.type': type })
         }
         const updatePostReact = await PostModel.findOneAndUpdate({ _id: postId },
@@ -58,7 +54,7 @@ router.post('/:postId/reaction', verifyToken, async (req, res) => {
             },
 
         )
-        res.send({ type: newType, totalReaction: updatePostReact.totalReaction, reaction: updatePostReact.reaction })
+        res.send({ currentReaction: newType, reaction: updatePostReact.reaction })
     } catch (error) {
         console.log(error)
         res.status(400).send(error)

@@ -8,61 +8,6 @@ const router = Router()
 
 router.get('/', verifyToken, async (req, res) => {
     try {
-        // const posts = await PostModel.aggregate([
-        //     {
-        //         $lookup: {
-        //             from: "comments",
-        //             let: { abcdefg: "$_id" },
-        //             pipeline: [
-        //                 { $match: { $expr: { $eq: ["$postId", "$$abcdefg"] } } },
-        //                 { $sort: { createdAt: -1 } },
-        //                 { $limit: 4 },
-        //                 {
-        //                     $lookup: {
-        //                         from: "users",
-        //                         localField: "ownerId",
-        //                         foreignField: "_id",
-        //                         as: "owner"
-        //                     }
-        //                 },
-        //                 { $unwind: "$owner" },
-        //                 {
-        //                     $project: {
-        //                         _id: 1,
-        //                         createdAt: 1,
-        //                         content: 1,
-        //                         postId: 1,
-        //                         attachments: 1,
-        //                         owner: { avatar: 1, name: 1, _id: 1 }
-        //                     }
-        //                 }
-        //             ],
-        //             as: "latestComments"
-        //         }
-        //     },
-        //     {
-        //         $lookup: {
-        //             from: "users",
-        //             localField: "ownerId",
-        //             foreignField: "_id",
-        //             as: "owner"
-        //         }
-        //     },
-        //     { $unwind: "$owner" },
-        //     {
-        //         $project: {
-        //             _id: 1,
-        //             owner: { avatar: 1, name: 1, _id: 1 },
-        //             content: 1,
-        //             attachments: 1,
-        //             likes: 1,
-        //             createdAt: 1,
-        //             latestComments: 1,
-        //             // "latestComment.owner": 1
-        //         }
-        //     },
-        //     { $sort: { createdAt: -1 } }
-        // ])
         const posts = await PostModel.aggregate([
             {
                 $lookup: {                          // kết hợp bảng comment vào post
@@ -71,13 +16,7 @@ router.get('/', verifyToken, async (req, res) => {
                     localField: '_id',
                     pipeline: [
                         {
-                            $count: 'totalComment'
-                        },
-                        {
                             $sort: { createdAt: -1 },
-                        },
-                        {
-                            $limit: 2
                         },
                         {
                             $lookup: {              // kết hợp bảng user vào comment
@@ -98,6 +37,12 @@ router.get('/', verifyToken, async (req, res) => {
                         }
                     ],
                     as: 'latestComments'
+                }
+            },
+            {
+                $addFields: {
+                    totalComment: { $size: '$latestComments' },
+                    latestComments: { $slice: ['$latestComments', 2] }
                 }
             },
             {
@@ -123,9 +68,19 @@ router.get('/', verifyToken, async (req, res) => {
             {
                 $lookup: {
                     from: 'post-reactions',
-                    let: { postId: '$_id', postReactionOwnerId: req.JWT },     // $_id la id cua document Post 
+                    let: { postId: '$_id' },     // $_id la id cua document Post 
                     pipeline: [
-                        { $match: { $expr: { $and: [{ $eq: ['$postId', '$$postId'] }, { $eq: ['$$postReactionOwnerId', '$ownerId'] }] } } },     // $postId, $ownerId la cua post-reactions
+                        {
+                            $match: {
+                                $expr: {
+                                    $and: [
+                                        { $eq: ['$postId', '$$postId'] },
+                                        { $eq: ['$ownerId', req.JWT] }
+                                    ]
+                                },
+
+                            }
+                        },     // $postId, $ownerId la cua post-reactions
                     ],
                     as: 'currentReaction'
                 }
@@ -136,6 +91,13 @@ router.get('/', verifyToken, async (req, res) => {
                     preserveNullAndEmptyArrays: true
                 }
             },
+            {
+                $replaceRoot: {
+                    newRoot: {
+                        $mergeObjects: ['$$ROOT', { currentReaction: '$$ROOT.currentReaction.type' }]
+                    }
+                }
+            }
         ])
         res.send(posts)
     } catch (error) {

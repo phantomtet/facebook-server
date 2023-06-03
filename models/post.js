@@ -19,10 +19,6 @@ const postSchema = mongoose.Schema({
         type: [reactSchema],
         default: [{ type: 1, count: 0 }, { type: 2, count: 0 }, { type: 3, count: 0 }, { type: 4, count: 0 }, { type: 5, count: 0 }, { type: 6, count: 0 }, { type: 7, count: 0 }]
     },
-    totalReaction: {
-        type: Number,
-        default: 0
-    },
     createdAt: {
         type: Date,
         default: Date.now
