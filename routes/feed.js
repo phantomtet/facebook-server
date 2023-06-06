@@ -8,7 +8,17 @@ const router = Router()
 
 router.get('/', verifyToken, async (req, res) => {
     try {
+        const { after } = req.query
         const posts = await PostModel.aggregate([
+            {
+                $sort: { createdAt: -1 }
+            },
+            {
+                $match: after ? { _id: { $lt: new mongoose.Types.ObjectId(after) } } : {},
+            },
+            {
+                $limit: 10
+            },
             {
                 $lookup: {                          // kết hợp bảng comment vào post
                     from: 'comments',
