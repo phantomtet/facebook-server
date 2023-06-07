@@ -1,0 +1,16 @@
+import { Router } from "express";
+import verifyToken from "./middleware/authorization.js";
+
+const router = Router()
+
+router.get('/', verifyToken, async (req, res) => {
+    try {
+
+    } catch (error) {
+        console.log(error)
+        res.status(400).send(error)
+    }
+
+})
+
+export default router
