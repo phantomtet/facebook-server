@@ -9,9 +9,10 @@ const reactSchema = mongoose.Schema({
     }
 })
 const postSchema = mongoose.Schema({
-    ownerId: {
+    owner: {
         required: true,
-        type: mongoose.Types.ObjectId
+        type: mongoose.Types.ObjectId,
+        ref: 'user'
     },
     content: String,
     attachments: [String],

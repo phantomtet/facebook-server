@@ -5,19 +5,20 @@ const messageSchema = mongoose.Schema({
         type: Date,
         default: Date.now
     },
-    ownerId: {
+    owner: {
         type: mongoose.Types.ObjectId,
         required: true,
         ref: 'user'
     },
-    receiverId: {
+    receiver: {
         type: mongoose.Types.ObjectId,
         required: true,
         ref: 'user'
     },
-    messageChannelId: {
+    messageChannel: {
         type: mongoose.Types.ObjectId,
         required: true,
+        ref: 'message-channel'
     },
     content: {
         type: String

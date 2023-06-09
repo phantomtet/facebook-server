@@ -9,14 +9,15 @@ const commentSchema = mongoose.Schema({
         type: String,
         required: true
     },
-    ownerId: {
+    owner: {
         type: mongoose.Types.ObjectId,
         required: true,
         ref: 'user'
     },
-    postId: {
+    post: {
         type: mongoose.Types.ObjectId,
-        required: true
+        required: true,
+        ref: 'post'
     },
     attachments: [String]
 })

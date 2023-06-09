@@ -11,7 +11,7 @@ router.get('/', verifyToken, async (req, res) => {
             {
                 $lookup: {
                     from: 'messages',
-                    foreignField: 'messageChannelId',
+                    foreignField: 'messageChannel',
                     localField: '_id',
                     as: 'latestMessage',
                     pipeline: [
@@ -21,7 +21,7 @@ router.get('/', verifyToken, async (req, res) => {
                             $lookup: {
                                 from: 'users',
                                 foreignField: '_id',
-                                localField: 'ownerId',
+                                localField: 'owner',
                                 as: 'owner'
                             }
                         },
@@ -29,7 +29,7 @@ router.get('/', verifyToken, async (req, res) => {
                             $lookup: {
                                 from: 'users',
                                 foreignField: '_id',
-                                localField: 'receiverId',
+                                localField: 'receiver',
                                 as: 'receiver'
                             }
                         },

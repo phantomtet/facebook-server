@@ -8,13 +8,19 @@ const router = Router()
 
 router.get('/', verifyToken, async (req, res) => {
     try {
-        const { after } = req.query
+        const { after, before } = req.query
+        let orExpression = []
+        if (after) orExpression.push({ _id: { $lt: new mongoose.Types.ObjectId(after) } })
+        if (before) orExpression.push({ _id: { $gt: new mongoose.Types.ObjectId(before) } })
+        if (!after && !before) orExpression = [{}]
         const posts = await PostModel.aggregate([
             {
                 $sort: { createdAt: -1 }
             },
             {
-                $match: after ? { _id: { $lt: new mongoose.Types.ObjectId(after) } } : {},
+                $match: {
+                    $or: orExpression
+                },
             },
             {
                 $limit: 10
@@ -22,7 +28,7 @@ router.get('/', verifyToken, async (req, res) => {
             {
                 $lookup: {                          // kết hợp bảng comment vào post
                     from: 'comments',
-                    foreignField: 'postId',
+                    foreignField: 'post',
                     localField: '_id',
                     pipeline: [
                         {
@@ -32,7 +38,7 @@ router.get('/', verifyToken, async (req, res) => {
                             $lookup: {              // kết hợp bảng user vào comment
                                 from: 'users',
                                 foreignField: '_id',
-                                localField: 'ownerId',
+                                localField: 'owner',
                                 as: 'owner'
                             }
                         },
@@ -42,7 +48,6 @@ router.get('/', verifyToken, async (req, res) => {
                         {
                             $project: {
                                 owner: userProjection,
-                                ownerId: 0
                             }
                         }
                     ],
@@ -59,7 +64,7 @@ router.get('/', verifyToken, async (req, res) => {
                 $lookup: {
                     from: 'users',
                     foreignField: '_id',
-                    localField: 'ownerId',
+                    localField: 'owner',
                     as: 'owner'
                 }
             },
@@ -69,7 +74,6 @@ router.get('/', verifyToken, async (req, res) => {
             {
                 $project: {
                     owner: userProjection,
-                    ownerId: 0
                 }
             },
             {
@@ -84,8 +88,8 @@ router.get('/', verifyToken, async (req, res) => {
                             $match: {
                                 $expr: {
                                     $and: [
-                                        { $eq: ['$postId', '$$postId'] },
-                                        { $eq: ['$ownerId', req.JWT] }
+                                        { $eq: ['$post', '$$postId'] },
+                                        { $eq: ['$owner', req.JWT] }
                                     ]
                                 },
 

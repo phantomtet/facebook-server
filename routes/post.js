@@ -3,18 +3,20 @@ import verifyToken from "../middleware/authorization.js";
 import PostModel from "../models/post.js";
 import PostReactionModel from "../models/postReaction.js";
 import mongoose from "mongoose";
+import { userProjection } from "../models/user.js";
 
 const router = Router()
 
 router.post('/', verifyToken, async (req, res) => {
     try {
         const { content, attachments } = req.body
-        const createPost = await PostModel.create({
-            ownerId: req.JWT,
+        const createPost = await PostModel.findOneAndUpdate({ _id: new mongoose.Types.ObjectId() }, {
+            owner: req.JWT,
             content,
             attachments
-        })
-        res.send(createPost)
+        }, { new: true, upsert: true, setDefaultsOnInsert: true }).populate('owner', userProjection)
+
+        res.send({ ...createPost.toObject(), latestComments: [] })
     } catch (error) {
         res.status(400).send(error)
     }
@@ -24,8 +26,8 @@ router.post('/:postId/reaction', verifyToken, async (req, res) => {
         const { postId } = req.params
         const { type } = req.body
         const oldReact = await PostReactionModel.findOneAndUpdate(
-            { postId, ownerId: req.JWT },
-            [{ $set: { postId: new mongoose.Types.ObjectId(postId), ownerId: req.JWT, type: { $cond: [{ $eq: ['$type', type] }, 0, type] } } }],
+            { post: postId, owner: req.JWT },
+            [{ $set: { post: new mongoose.Types.ObjectId(postId), owner: req.JWT, type: { $cond: [{ $eq: ['$type', type] }, 0, type] } } }],
             { upsert: true, new: false, setDefaultsOnInsert: true }
         )
         const newType = type === oldReact?.type ? 0 : type

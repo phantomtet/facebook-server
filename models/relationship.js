@@ -1,13 +1,15 @@
 import mongoose from "mongoose";
 
 const relationshipSchema = mongoose.Schema({
-    fromId: {
+    from: {
         required: true,
-        type: mongoose.Types.ObjectId
+        type: mongoose.Types.ObjectId,
+        ref: 'user'
     },
-    toId: {
+    to: {
         required: true,
-        type: mongoose.Types.ObjectId
+        type: mongoose.Types.ObjectId,
+        ref: 'user'
     },
     isSendFriendRequest: {
         default: false,

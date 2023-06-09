@@ -14,11 +14,11 @@ router.get('/:receiverId', verifyToken, async (req, res) => {
         const getMessages = await MessageModel.find(
             {
                 $or: [
-                    { ownerId: req.JWT, receiverId: receiverId },
-                    { ownerId: receiverId, receiverId: req.JWT }
+                    { owner: req.JWT, receiver: receiverId },
+                    { owner: receiverId, receiver: req.JWT }
                 ]
             }
-        ).sort({ createdAt: -1 }).populate('ownerId', userProjection).populate('receiverId', userProjection)
+        ).sort({ createdAt: -1 }).populate('owner', userProjection).populate('receiver', userProjection)
         res.send(getMessages)
     } catch (error) {
         console.log(error)
@@ -41,14 +41,14 @@ router.post('/:receiverId', verifyToken, async (req, res) => {
         )
         const message = await MessageModel.findOneAndUpdate({ _id: new mongoose.Types.ObjectId() },
             {
-                receiverId,
-                ownerId: req.JWT,
+                receiver: receiverId,
+                owner: req.JWT,
                 content,
                 attachments,
-                messageChannelId: createMessageChannel._id
+                messageChannel: createMessageChannel._id
             },
             { upsert: true, new: true, setDefaultsOnInsert: true }
-        ).populate('ownerId', userProjection).populate('receiverId', userProjection)
+        ).populate('owner', userProjection).populate('receiver', userProjection)
         res.send(message)
         clients[req.JWT]?.send(JSON.stringify({ eventName: 'receiveMessage', data: message, targetId: receiverId, messageChannelId: createMessageChannel._id }))
         clients[receiverId]?.send(JSON.stringify({ eventName: 'receiveMessage', data: message, targetId: req.JWT, messageChannelId: createMessageChannel._id }))
