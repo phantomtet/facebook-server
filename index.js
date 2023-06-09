@@ -1,9 +1,10 @@
 import express from "express";
 import mongoose from "mongoose";
 import { createServer } from 'http'
-import { Server } from 'socket.io'
+import { WebSocketServer } from 'ws'
 import dotenv from 'dotenv'
 import cors from 'cors'
+import callback from "./websocket/index.js";
 import LoginRouter from './routes/login.js'
 import FeedRouter from './routes/feed.js'
 import CommentRouter from './routes/comment.js'
@@ -12,6 +13,8 @@ import PostRouter from './routes/post.js'
 import SearchRouter from './routes/search.js'
 import ContactRouter from './routes/contact.js'
 import MessageRouter from './routes/message.js'
+import MessageChannelRouter from './routes/messageChannel.js'
+
 dotenv.config()
 const app = express()
 app.use(cors())
@@ -19,12 +22,10 @@ app.use(express.json())
 mongoose.connect(process.env.CONNECTION_URL)
 
 const server = createServer(app)
-const io = new Server(server, {
-    cors: {
-        origin: '*'
-    }
+export const websocket = new WebSocketServer({
+    server
 })
-
+websocket.on('connection', callback)
 
 app.use('/api/login', LoginRouter)
 app.use('/api/feed', FeedRouter)
@@ -34,4 +35,9 @@ app.use('/api/post', PostRouter)
 app.use('/api/search', SearchRouter)
 app.use('/api/contact', ContactRouter)
 app.use('/api/message', MessageRouter)
-app.listen(process.env.PORT || 3001)
+app.use('/api/msgchannel', MessageChannelRouter)
+
+
+
+
+server.listen(8000)

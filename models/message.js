@@ -7,11 +7,17 @@ const messageSchema = mongoose.Schema({
     },
     ownerId: {
         type: mongoose.Types.ObjectId,
-        required: true
+        required: true,
+        ref: 'user'
     },
     receiverId: {
         type: mongoose.Types.ObjectId,
-        required: true
+        required: true,
+        ref: 'user'
+    },
+    messageChannelId: {
+        type: mongoose.Types.ObjectId,
+        required: true,
     },
     content: {
         type: String
