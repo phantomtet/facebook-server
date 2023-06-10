@@ -4,6 +4,7 @@ import PostModel from "../models/post.js";
 import PostReactionModel from "../models/postReaction.js";
 import mongoose from "mongoose";
 import { userProjection } from "../models/user.js";
+import CommentModel from "../models/comment.js";
 
 const router = Router()
 
@@ -62,6 +63,36 @@ router.post('/:postId/reaction', verifyToken, async (req, res) => {
         res.status(400).send(error)
     }
 })
-
-
+router.get('/:postId/comments', verifyToken, async (req, res) => {
+    try {
+        const { after, beforeTimestamp } = req.query
+        let orExpression = []
+        const postId = new mongoose.Types.ObjectId(req.params.postId)
+        if (after) orExpression.push({ _id: { $lt: new mongoose.Types.ObjectId(after) } })
+        if (beforeTimestamp) orExpression.push({ createdAt: { $gt: new Date(beforeTimestamp) } })
+        if (!after && !beforeTimestamp) orExpression = [{}]
+        const comments = await CommentModel.find(
+            {
+                post: postId, $or: orExpression
+            }
+        ).populate('owner', userProjection).sort({ createdAt: -1 }).limit(10)
+        res.send(comments)
+    } catch (error) {
+        console.log(error)
+        res.status(400).send(error)
+    }
+})
+router.get('/:postId/reaction', verifyToken, async (req, res) => {
+    try {
+        const postId = new mongoose.Types.ObjectId(req.params.postId)
+        const postData = await PostModel.findById(postId)
+        const comments = await CommentModel.find(
+            { post: postId }
+        ).count()
+        res.send({ reaction: postData.reaction, totalComment: comments })
+    } catch (error) {
+        console.log(error)
+        res.status(400).send(error)
+    }
+})
 export default router

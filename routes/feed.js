@@ -8,11 +8,11 @@ const router = Router()
 
 router.get('/', verifyToken, async (req, res) => {
     try {
-        const { after, before } = req.query
+        const { after, beforeTimestamp } = req.query
         let orExpression = []
         if (after) orExpression.push({ _id: { $lt: new mongoose.Types.ObjectId(after) } })
-        if (before) orExpression.push({ _id: { $gt: new mongoose.Types.ObjectId(before) } })
-        if (!after && !before) orExpression = [{}]
+        if (beforeTimestamp) orExpression.push({ $and: [{ createdAt: { $gt: new Date(beforeTimestamp) } }, { owner: { $ne: req.JWT } }] })
+        if (!after && !beforeTimestamp) orExpression = [{}]
         const posts = await PostModel.aggregate([
             {
                 $sort: { createdAt: -1 }
@@ -23,7 +23,7 @@ router.get('/', verifyToken, async (req, res) => {
                 },
             },
             {
-                $limit: 10
+                $limit: 5
             },
             {
                 $lookup: {                          // kết hợp bảng comment vào post
