@@ -5,12 +5,20 @@ import PostReactionModel from "../models/postReaction.js";
 import mongoose from "mongoose";
 import { userProjection } from "../models/user.js";
 import CommentModel from "../models/comment.js";
+import multer from "multer";
+import { v4 } from "uuid";
+import { storageRef } from "../firebase/index.js";
+import { getDownloadURL, uploadBytes } from "firebase/storage";
 
 const router = Router()
-
-router.post('/', verifyToken, async (req, res) => {
+const upload = multer()
+router.post('/', verifyToken, upload.array('attachments', 10), async (req, res) => {
     try {
-        const { content, attachments } = req.body
+        const { content } = req.body
+        const files = req.files
+        if (files.some(file => file.size > 1000000)) return res.status(400).send({ message: 'File too large' })
+        const response = await Promise.all(files.map(file => uploadBytes(storageRef(v4()), file.buffer, { contentType: file.mimetype })))
+        const attachments = await Promise.all(response.map(res => getDownloadURL(res.ref)))
         const createPost = await PostModel.findOneAndUpdate({ _id: new mongoose.Types.ObjectId() }, {
             owner: req.JWT,
             content,

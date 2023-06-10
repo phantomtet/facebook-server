@@ -14,7 +14,7 @@ import SearchRouter from './routes/search.js'
 import ContactRouter from './routes/contact.js'
 import MessageRouter from './routes/message.js'
 import MessageChannelRouter from './routes/messageChannel.js'
-
+import UploadRouter from './routes/upload.js'
 dotenv.config()
 const app = express()
 app.use(cors())
@@ -36,7 +36,7 @@ app.use('/api/search', SearchRouter)
 app.use('/api/contact', ContactRouter)
 app.use('/api/message', MessageRouter)
 app.use('/api/msgchannel', MessageChannelRouter)
-
+app.use('/api/upload', UploadRouter)
 
 
 
