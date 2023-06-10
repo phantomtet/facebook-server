@@ -51,7 +51,7 @@ router.post('/:receiverId', verifyToken, async (req, res) => {
         ).populate('owner', userProjection).populate('receiver', userProjection)
         res.send(message)
         clients[req.JWT]?.send(JSON.stringify({ eventName: 'receiveMessage', data: message, targetId: receiverId, messageChannelId: createMessageChannel._id }))
-        clients[receiverId]?.send(JSON.stringify({ eventName: 'receiveMessage', data: message, targetId: req.JWT, messageChannelId: createMessageChannel._id }))
+        if (req.JWT.toString() !== receiverId.toString()) clients[receiverId]?.send(JSON.stringify({ eventName: 'receiveMessage', data: message, targetId: req.JWT, messageChannelId: createMessageChannel._id }))
     } catch (error) {
         console.log(error)
         res.status(400).send(error)

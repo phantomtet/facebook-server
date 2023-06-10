@@ -6,7 +6,10 @@ const router = Router()
 
 router.get('/', verifyToken, async (req, res) => {
     try {
-        const contact = await UserModel.find({}, userProjection,).limit(20)
+        const contact = await UserModel.find(
+            {}
+            , userProjection,
+        ).limit(20)
 
         res.send(contact)
     } catch (error) {

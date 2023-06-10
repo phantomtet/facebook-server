@@ -7,6 +7,7 @@ const router = Router()
 
 router.get('/', verifyToken, async (req, res) => {
     try {
+        const { search } = req.query
         const query = await MessageChannelModel.aggregate([
             {
                 $lookup: {
@@ -49,17 +50,18 @@ router.get('/', verifyToken, async (req, res) => {
             },
             { $unwind: '$participants' },
             {
+                $addFields: {
+                    isOwner: { $eq: ['$participants._id', req.JWT] }
+                }
+            },
+            { $sort: { isOwner: 1 } },
+            { $project: { isOwner: 0 } },
+            {
                 $group: {
                     _id: '$_id',
                     latestMessage: { $first: '$latestMessage' },
                     participants: {
-                        $push: {
-                            $cond: [
-                                { $eq: ['$participants._id', req.JWT] },
-                                '$$REMOVE',
-                                '$participants'
-                            ]
-                        }
+                        $push: '$participants'
                     }
                 }
             },
@@ -69,7 +71,8 @@ router.get('/', verifyToken, async (req, res) => {
                 }
             },
             { $unwind: '$latestMessage' },
-            { $sort: { 'latestMessage.createdAt': -1 } }
+            { $sort: { 'latestMessage.createdAt': -1 } },
+            { $limit: 20 }
         ])
         res.send(query)
     } catch (error) {
