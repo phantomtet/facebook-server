@@ -16,9 +16,11 @@ router.post('/', verifyToken, upload.array('attachments', 10), async (req, res) 
     try {
         const { content } = req.body
         const files = req.files
-        if (files.some(file => file.size > 1000000)) return res.status(400).send({ message: 'File too large' })
+        if (files.some(file => file.size > 10000000)) return res.status(400).send({ message: 'File too large' })
+        if (files.some(file => !file.mimetype.startsWith('video/') || !file.mimetype.startsWith('image/'))) return res.status(400).send({ message: 'Invalid file type' })
         const response = await Promise.all(files.map(file => uploadBytes(storageRef(v4()), file.buffer, { contentType: file.mimetype })))
-        const attachments = await Promise.all(response.map(res => getDownloadURL(res.ref)))
+        console.log(response)
+        const attachments = await Promise.all(response.map(async res => ({ url: await getDownloadURL(res.ref), contentType: res.metadata.contentType })))
         const createPost = await PostModel.findOneAndUpdate({ _id: new mongoose.Types.ObjectId() }, {
             owner: req.JWT,
             content,

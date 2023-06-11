@@ -41,6 +41,11 @@ router.get('/', verifyToken, async (req, res) => {
                 }
             },
             {
+                $match: {
+                    participants: { $all: [req.JWT] }
+                }
+            },
+            {
                 $lookup: {
                     from: 'users',
                     foreignField: '_id',
