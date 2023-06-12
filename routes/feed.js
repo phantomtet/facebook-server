@@ -8,19 +8,24 @@ const router = Router()
 
 router.get('/', verifyToken, async (req, res) => {
     try {
-        const { after, beforeTimestamp } = req.query
+        const { after, beforeTimestamp, fromUserId } = req.query
         let orExpression = []
         if (after) orExpression.push({ _id: { $lt: new mongoose.Types.ObjectId(after) } })
         if (beforeTimestamp) orExpression.push({ $and: [{ createdAt: { $gt: new Date(beforeTimestamp) } }, { owner: { $ne: req.JWT } }] })
         if (!after && !beforeTimestamp) orExpression = [{}]
-        const posts = await PostModel.aggregate([
-            {
-                $sort: { createdAt: -1 }
-            },
+        const aggregate = [
             {
                 $match: {
-                    $or: orExpression
+                    $and: [
+                        fromUserId ? { $expr: { $eq: ['$owner', new mongoose.Types.ObjectId(fromUserId)] } } : {},
+                        {
+                            $or: orExpression
+                        }
+                    ]
                 },
+            },
+            {
+                $sort: { createdAt: -1 }
             },
             {
                 $limit: 5
@@ -112,10 +117,12 @@ router.get('/', verifyToken, async (req, res) => {
                     }
                 }
             }
-        ])
+        ]
+        const posts = await PostModel.aggregate(aggregate)
         res.send(posts)
     } catch (error) {
         console.log(error)
+        res.status(400).send(error)
     }
 })
 
