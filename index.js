@@ -16,6 +16,8 @@ import MessageRouter from './routes/message.js'
 import MessageChannelRouter from './routes/messageChannel.js'
 import UploadRouter from './routes/upload.js'
 import ProfileRouter from './routes/profile.js'
+import testRouter from './routes/test.js'
+
 dotenv.config()
 const app = express()
 app.use(cors())
@@ -39,6 +41,6 @@ app.use('/api/message', MessageRouter)
 app.use('/api/msgchannel', MessageChannelRouter)
 app.use('/api/upload', UploadRouter)
 app.use('/api/profile', ProfileRouter)
-
+app.use('/test', testRouter)
 
 server.listen(process.env.PORT || 8000)
