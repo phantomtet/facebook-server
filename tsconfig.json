@@ -1,0 +1,13 @@
+{
+  "compilerOptions": {
+    // "strictNullChecks": true,
+    "module": "commonjs",
+    "outDir": "./dist",
+    "lib": ["es6"],
+    "target": "ES2016",
+    // "isolatedModules": false,
+    // "noEmit": false,
+    "esModuleInterop": true
+  },
+  "include": ["**/*.ts", "index.js", "**/*.js", "*.js"]
+}
