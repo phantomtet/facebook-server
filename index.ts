@@ -22,7 +22,7 @@ declare global {
   // eslint-disable-next-line @typescript-eslint/no-namespace
   namespace Express {
     interface Request {
-      JWT: string;
+      JWT: mongoose.Types.ObjectId;
       file?: any;
       files?: any[];
     }

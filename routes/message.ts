@@ -60,7 +60,7 @@ router.post('/:receiverId', verifyToken, async (req, res) => {
       .populate('owner', userProjection)
       .populate('receiver', userProjection);
     res.send(message);
-    clients[req.JWT]?.send(
+    clients[req.JWT.toString()]?.send(
       JSON.stringify({
         eventName: 'receiveMessage',
         data: message,

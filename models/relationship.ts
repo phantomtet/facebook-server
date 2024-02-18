@@ -7,29 +7,15 @@ interface I_RelationConfig {
 }
 const relationshipSchema = new mongoose.Schema({
   user1: {
-    required: true,
     type: mongoose.Types.ObjectId,
     ref: 'user',
   },
   user2: {
-    required: true,
     type: mongoose.Types.ObjectId,
     ref: 'user',
   },
-  relationship1: {
-    isSendFriendRequest: {
-      default: false,
-      type: Boolean,
-    },
-    status: String,
-  },
-  relationship2: {
-    isSendFriendRequest: {
-      default: false,
-      type: Boolean,
-    },
-    status: String,
-  },
+  friendRequestSentBy: mongoose.Types.ObjectId,
+  isFriend: Boolean,
 });
 
 const RelationshipModel = mongoose.model('relationship', relationshipSchema);
